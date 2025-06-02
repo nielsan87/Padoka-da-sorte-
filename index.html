@@ -1,46 +1,85 @@
-import random
+package main
 
-def jogo_repositor():
-    saldo = 1000
-    itens = ['Tela', 'Bateria', 'Chip', 'Cabo', 'Placa', 'Carregador', 'Botão']
+import (
+	"fmt"
+	"html/template"
+	"math/rand"
+	"net/http"
+	"time"
+)
 
-    print("=== Jogo de Aposta Repositor Celular & PC ===")
-    print(f"Saldo inicial: R${saldo}")
+var symbols = []string{"🍞", "🥖", "🍰", "🧁", "🥐"}
 
-    while saldo > 0:
-        print(f"\nSaldo atual: R${saldo}")
-        try:
-            aposta = int(input("Quanto deseja apostar? (0 para sair) R$"))
-            if aposta == 0:
-                print("Obrigado por jogar! Volte sempre.")
-                break
-            if aposta > saldo:
-                print("Você não tem saldo suficiente para essa aposta.")
-                continue
-            if aposta < 0:
-                print("Valor inválido. Tente novamente.")
-                continue
-        except ValueError:
-            print("Digite um número válido.")
-            continue
+type SlotResult struct {
+	Reel1   string
+	Reel2   string
+	Reel3   string
+	Message string
+}
 
-        resultado = [random.choice(itens) for _ in range(3)]
-        print("Itens sorteados:", resultado)
+var tpl = template.Must(template.New("slot").Parse(`
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Padoka da Sorte 🎰</title>
+<style>
+  body { font-family: Arial, sans-serif; text-align: center; padding: 50px; background: #fff8e1; }
+  h1 { color: #d2691e; }
+  .reels { font-size: 80px; margin: 20px 0; }
+  button { font-size: 24px; padding: 10px 20px; background: #f4a261; border: none; border-radius: 10px; cursor: pointer; }
+  button:hover { background: #e76f51; color: white; }
+  .message { font-size: 28px; margin-top: 30px; color: #2a9d8f; }
+</style>
+</head>
+<body>
+  <h1>Padoka da Sorte 🎰</h1>
+  <form method="POST" action="/">
+    <div class="reels">{{.Reel1}} | {{.Reel2}} | {{.Reel3}}</div>
+    <button type="submit">Girar!</button>
+  </form>
+  {{if .Message}}
+  <div class="message">{{.Message}}</div>
+  {{end}}
+</body>
+</html>
+`))
 
-        if resultado[0] == resultado[1] == resultado[2]:
-            ganho = aposta * 5
-            saldo += ganho
-            print(f"Trinca! Você ganhou R${ganho}!")
-        elif resultado[0] == resultado[1] or resultado[1] == resultado[2] or resultado[0] == resultado[2]:
-            ganho = aposta * 2
-            saldo += ganho
-            print(f"Par! Você ganhou R${ganho}!")
-        else:
-            saldo -= aposta
-            print(f"Sem combinação. Você perdeu R${aposta}.")
+func spin() (string, string, string) {
+	rand.Seed(time.Now().UnixNano())
+	return symbols[rand.Intn(len(symbols))],
+		symbols[rand.Intn(len(symbols))],
+		symbols[rand.Intn(len(symbols))]
+}
 
-    if saldo <= 0:
-        print("Saldo zerado! Jogo encerrado.")
+func checkWin(r1, r2, r3 string) bool {
+	return r1 == r2 && r2 == r3
+}
 
-if __name__ == "__main__":
-    jogo_repositor()
+func handler(w http.ResponseWriter, r *http.Request) {
+	data := SlotResult{
+		Reel1:   "❓",
+		Reel2:   "❓",
+		Reel3:   "❓",
+		Message: "",
+	}
+
+	if r.Method == http.MethodPost {
+		r1, r2, r3 := spin()
+		data.Reel1, data.Reel2, data.Reel3 = r1, r2, r3
+
+		if checkWin(r1, r2, r3) {
+			data.Message = "🎉 Parabéns! Você ganhou na Padoka da Sorte! 🎉"
+		} else {
+			data.Message = "Tente de novo! 🍞🥖🍰🧁🥐"
+		}
+	}
+
+	tpl.Execute(w, data)
+}
+
+func main() {
+	http.HandleFunc("/", handler)
+	fmt.Println("Servidor rodando em http://localhost:8080")
+	http.ListenAndServe(":8080", nil)
+}
