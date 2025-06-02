@@ -5,16 +5,19 @@ import (
 	"html/template"
 	"math/rand"
 	"net/http"
+	"strconv"
 	"time"
 )
 
 var symbols = []string{"🍞", "🥖", "🍰", "🧁", "🥐"}
 
 type SlotResult struct {
-	Reel1   string
-	Reel2   string
-	Reel3   string
-	Message string
+	Reel1    string
+	Reel2    string
+	Reel3    string
+	Message  string
+	Credits  int
+	BetValue int
 }
 
 var tpl = template.Must(template.New("slot").Parse(`
@@ -27,17 +30,29 @@ var tpl = template.Must(template.New("slot").Parse(`
   body { font-family: Arial, sans-serif; text-align: center; padding: 50px; background: #fff8e1; }
   h1 { color: #d2691e; }
   .reels { font-size: 80px; margin: 20px 0; }
-  button { font-size: 24px; padding: 10px 20px; background: #f4a261; border: none; border-radius: 10px; cursor: pointer; }
+  button, input[type=number] { font-size: 24px; padding: 10px 20px; border-radius: 10px; }
+  button { background: #f4a261; border: none; cursor: pointer; }
   button:hover { background: #e76f51; color: white; }
+  input[type=number] { width: 120px; }
   .message { font-size: 28px; margin-top: 30px; color: #2a9d8f; }
+  .credits { font-size: 22px; margin-top: 20px; color: #6b4226; }
+  .bet-label { font-size: 18px; margin-right: 10px; }
 </style>
 </head>
 <body>
   <h1>Padoka da Sorte 🎰</h1>
+  <div class="credits">Créditos: {{.Credits}}</div>
+  {{if ge .Credits 100}}
   <form method="POST" action="/">
+    <input type="hidden" name="credits" value="{{.Credits}}">
+    <label class="bet-label" for="bet">Valor da aposta:</label>
+    <input type="number" id="bet" name="bet" min="100" max="{{.Credits}}" value="{{.BetValue}}" required>
     <div class="reels">{{.Reel1}} | {{.Reel2}} | {{.Reel3}}</div>
-    <button type="submit">Girar!</button>
+    <button type="submit">Girar</button>
   </form>
+  {{else}}
+  <div class="message">😞 Créditos insuficientes para jogar.</div>
+  {{end}}
   {{if .Message}}
   <div class="message">{{.Message}}</div>
   {{end}}
@@ -57,29 +72,82 @@ func checkWin(r1, r2, r3 string) bool {
 }
 
 func handler(w http.ResponseWriter, r *http.Request) {
-	data := SlotResult{
-		Reel1:   "❓",
-		Reel2:   "❓",
-		Reel3:   "❓",
-		Message: "",
-	}
+	credits := 17000 // valor inicial
+	betValue := 500  // aposta padrão
 
 	if r.Method == http.MethodPost {
+		credStr := r.FormValue("credits")
+		if c, err := strconv.Atoi(credStr); err == nil {
+			credits = c
+		}
+
+		betStr := r.FormValue("bet")
+		if b, err := strconv.Atoi(betStr); err == nil {
+			betValue = b
+		}
+
+		if betValue < 100 {
+			betValue = 100
+		}
+		if betValue > credits {
+			betValue = credits
+		}
+
+		if credits < betValue {
+			data := SlotResult{
+				Reel1:    "❓",
+				Reel2:    "❓",
+				Reel3:    "❓",
+				Message:  "😞 Créditos insuficientes para essa aposta.",
+				Credits:  credits,
+				BetValue: betValue,
+			}
+			tpl.Execute(w, data)
+			return
+		}
+
+		credits -= betValue
+
 		r1, r2, r3 := spin()
-		data.Reel1, data.Reel2, data.Reel3 = r1, r2, r3
+		message := ""
 
 		if checkWin(r1, r2, r3) {
-			data.Message = "🎉 Parabéns! Você ganhou na Padoka da Sorte! 🎉"
+			winAmount := betValue * 4
+			credits += winAmount
+			message = fmt.Sprintf("🎉 Parabéns! Você ganhou %d créditos na Padoka da Sorte! 🎉", winAmount)
 		} else {
-			data.Message = "Tente de novo! 🍞🥖🍰🧁🥐"
+			message = "Tente de novo! 🍞🥖🍰🧁🥐"
 		}
+
+		data := SlotResult{
+			Reel1:    r1,
+			Reel2:    r2,
+			Reel3:    r3,
+			Message:  message,
+			Credits:  credits,
+			BetValue: betValue,
+		}
+
+		tpl.Execute(w, data)
+		return
 	}
 
+	data := SlotResult{
+		Reel1:    "❓",
+		Reel2:    "❓",
+		Reel3:    "❓",
+		Message:  "",
+		Credits:  credits,
+		BetValue: betValue,
+	}
 	tpl.Execute(w, data)
 }
 
 func main() {
 	http.HandleFunc("/", handler)
 	fmt.Println("Servidor rodando em http://localhost:8080")
-	http.ListenAndServe(":8080", nil)
+	err := http.ListenAndServe(":8080", nil)
+	if err != nil {
+		fmt.Println("Erro ao iniciar servidor:", err)
+	}
 }
