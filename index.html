@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Doces da Padoka</title>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600&display=swap" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Montserrat', sans-serif;
+      background: linear-gradient(to right, #fff3e0, #ffe0b2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
+    .container {
+      background: #fff;
+      padding: 30px;
+      border-radius: 20px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+      text-align: center;
+      max-width: 900px;
+      width: 100%;
+    }
+    h1 {
+      color: #ff9800;
+      margin-bottom: 20px;
+    }
+    .slots {
+      display: grid;
+      grid-template-columns: repeat(8, 1fr);
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    .slot {
+      background: #fff8e1;
+      border: 2px solid #ffcc80;
+      border-radius: 10px;
+      width: 80px;
+      height: 80px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .slot img {
+      width: 60px;
+      height: 60px;
+    }
+    .buttons {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    button {
+      background-color: #ff9800;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      padding: 10px 20px;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #fb8c00;
+    }
+    .progress-bar-bg {
+      width: 100%;
+      height: 15px;
+      background: #ccc;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      width: 0%;
+      background: #4caf50;
+      transition: width 0.3s ease-in-out;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🎰 Doces da Padoka</h1>
+    <div class="slots" id="slots"></div>
+    <div class="buttons">
+      <button onclick="spin()">🎲 Girar</button>
+      <button onclick="collect()">💰 Recolher</button>
+      <button onclick="toggleTurbo()">⚡ Turbo</button>
+      <button onclick="autoPlay()">🔁 Auto</button>
+    </div>
+    <div class="progress-bar-bg">
+      <div class="progress-bar-fill" id="progressBar"></div>
+    </div>
+  </div>
+
+  <audio id="spinSound" src="https://www.myinstants.com/media/sounds/slot-machine.mp3"></audio>
+  <audio id="bonusSound" src="https://www.myinstants.com/media/sounds/bonus.wav"></audio>
+
+  <script>
+    const symbols = [
+      'https://i.imgur.com/2WZtODL.png', // Pudim
+      'https://i.imgur.com/klz0a1U.png', // Bolo
+      'https://i.imgur.com/1I9JmvH.png', // Brigadeiro
+      'https://i.imgur.com/EfTZFv2.png'  // Pão
+    ];
+
+    let turbo = false;
+    let auto = false;
+    let progress = 0;
+
+    const slotsContainer = document.getElementById('slots');
+    const spinSound = document.getElementById('spinSound');
+    const bonusSound = document.getElementById('bonusSound');
+
+    function initSlots() {
+      slotsContainer.innerHTML = '';
+      for (let i = 0; i < 24; i++) {
+        const div = document.createElement('div');
+        div.className = 'slot';
+        const img = document.createElement('img');
+        img.src = symbols[Math.floor(Math.random() * symbols.length)];
+        div.appendChild(img);
+        slotsContainer.appendChild(div);
+      }
+    }
+
+    function spin() {
+      spinSound.play();
+      const slots = document.querySelectorAll('.slot img');
+      slots.forEach(slot => {
+        const rand = Math.floor(Math.random() * symbols.length);
+        slot.src = symbols[rand];
+      });
+      updateProgress();
+    }
+
+    function updateProgress() {
+      progress += 10;
+      if (progress >= 100) {
+        bonusSound.play();
+        alert('🎉 Você ganhou um bônus da padaria!');
+        progress = 0;
+      }
+      document.getElementById('progressBar').style.width = progress + '%';
+    }
+
+    function collect() {
+      alert('Você recolheu seus prêmios! 🍞🎁');
+      progress = 0;
+      updateProgress();
+    }
+
+    function toggleTurbo() {
+      turbo = !turbo;
+      alert(turbo ? 'Turbo ativado ⚡' : 'Turbo desativado');
+    }
+
+    function autoPlay() {
+      auto = !auto;
+      if (auto) {
+        alert('Modo Auto ativado 🔁');
+        autoSpin();
+      } else {
+        alert('Modo Auto desativado');
+      }
+    }
+
+    function autoSpin() {
+      if (!auto) return;
+      spin();
+      setTimeout(autoSpin, turbo ? 300 : 1000);
+    }
+
+    initSlots();
+  </script>
+</body>
+</html>
