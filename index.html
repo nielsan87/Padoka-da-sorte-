@@ -1,153 +1,243 @@
-package main
-
-import (
-	"fmt"
-	"html/template"
-	"math/rand"
-	"net/http"
-	"strconv"
-	"time"
-)
-
-var symbols = []string{"🍞", "🥖", "🍰", "🧁", "🥐"}
-
-type SlotResult struct {
-	Reel1    string
-	Reel2    string
-	Reel3    string
-	Message  string
-	Credits  int
-	BetValue int
-}
-
-var tpl = template.Must(template.New("slot").Parse(`
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<title>Padoka da Sorte 🎰</title>
-<style>
-  body { font-family: Arial, sans-serif; text-align: center; padding: 50px; background: #fff8e1; }
-  h1 { color: #d2691e; }
-  .reels { font-size: 80px; margin: 20px 0; }
-  button, input[type=number] { font-size: 24px; padding: 10px 20px; border-radius: 10px; }
-  button { background: #f4a261; border: none; cursor: pointer; }
-  button:hover { background: #e76f51; color: white; }
-  input[type=number] { width: 120px; }
-  .message { font-size: 28px; margin-top: 30px; color: #2a9d8f; }
-  .credits { font-size: 22px; margin-top: 20px; color: #6b4226; }
-  .bet-label { font-size: 18px; margin-right: 10px; }
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Padoka da Sorte 77</title>
+  <style>
+    body {
+      margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #1a1a1a;
+      color: #fff;
+    }
+    header {
+      background: #d32f2f;
+      padding: 15px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: fixed;
+      width: 100%;
+      top: 0;
+      z-index: 1000;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.7);
+    }
+    header h1 {
+      margin: 0;
+      font-size: 24px;
+      color: #fff200;
+      font-weight: 900;
+      letter-spacing: 2px;
+    }
+    nav a {
+      color: #fff200;
+      text-decoration: none;
+      margin-left: 20px;
+      font-weight: bold;
+      font-size: 16px;
+      transition: color 0.3s ease;
+    }
+    nav a:hover {
+      color: #ff5722;
+    }
+    main {
+      padding: 100px 20px 40px;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    .saldo {
+      font-size: 18px;
+      margin-bottom: 20px;
+      color: #fff200;
+      font-weight: 700;
+      text-align: right;
+    }
+    section {
+      margin-bottom: 40px;
+      background: #222;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px #ff5722aa;
+    }
+    section h2 {
+      margin-top: 0;
+      color: #ffcc00;
+      text-shadow: 0 0 6px #ffcc00;
+    }
+    .game {
+      margin-top: 15px;
+      background: #333;
+      padding: 15px;
+      border-radius: 6px;
+      box-shadow: 0 0 5px #fff200aa;
+    }
+    .game p {
+      margin: 8px 0;
+      font-weight: 600;
+    }
+    label {
+      font-weight: 600;
+    }
+    input[type=number] {
+      width: 100px;
+      padding: 6px;
+      margin-left: 10px;
+      border-radius: 4px;
+      border: none;
+      font-size: 16px;
+    }
+    button {
+      background: #ff5722;
+      border: none;
+      color: #fff;
+      padding: 10px 18px;
+      margin-left: 10px;
+      border-radius: 5px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.3s ease;
+      font-size: 16px;
+    }
+    button:hover {
+      background: #d84315;
+    }
+    .resultado {
+      margin-top: 10px;
+      font-weight: 700;
+      font-size: 18px;
+      color: #fff200;
+      text-shadow: 0 0 6px #fff200;
+    }
+    .hidden {
+      display: none;
+    }
+    footer {
+      text-align: center;
+      padding: 15px;
+      color: #555;
+      background: #111;
+      font-size: 14px;
+      margin-top: 40px;
+    }
+    @media(max-width: 600px) {
+      nav a {
+        margin-left: 10px;
+        font-size: 14px;
+      }
+      input[type=number] {
+        width: 80px;
+      }
+      button {
+        padding: 8px 12px;
+        font-size: 14px;
+      }
+    }
+  </style>
 </head>
 <body>
-  <h1>Padoka da Sorte 🎰</h1>
-  <div class="credits">Créditos: {{.Credits}}</div>
-  {{if ge .Credits 100}}
-  <form method="POST" action="/">
-    <input type="hidden" name="credits" value="{{.Credits}}">
-    <label class="bet-label" for="bet">Valor da aposta:</label>
-    <input type="number" id="bet" name="bet" min="100" max="{{.Credits}}" value="{{.BetValue}}" required>
-    <div class="reels">{{.Reel1}} | {{.Reel2}} | {{.Reel3}}</div>
-    <button type="submit">Girar</button>
-  </form>
-  {{else}}
-  <div class="message">😞 Créditos insuficientes para jogar.</div>
-  {{end}}
-  {{if .Message}}
-  <div class="message">{{.Message}}</div>
-  {{end}}
-</body>
-</html>
-`))
 
-func spin() (string, string, string) {
-	rand.Seed(time.Now().UnixNano())
-	return symbols[rand.Intn(len(symbols))],
-		symbols[rand.Intn(len(symbols))],
-		symbols[rand.Intn(len(symbols))]
-}
+<header>
+  <h1>Padoka da Sorte 77</h1>
+  <nav>
+    <a href="#" onclick="showSection('home')">Início</a>
+    <a href="#" onclick="showSection('games')">Jogos</a>
+    <a href="#" onclick="showSection('deposit')">Depósito</a>
+    <a href="#" onclick="showSection('withdraw')">Saque</a>
+  </nav>
+</header>
 
-func checkWin(r1, r2, r3 string) bool {
-	return r1 == r2 && r2 == r3
-}
+<main>
+  <div class="saldo">Saldo: R$ <span id="saldoValor">1000</span></div>
 
-func handler(w http.ResponseWriter, r *http.Request) {
-	credits := 17000 // valor inicial
-	betValue := 500  // aposta padrão
+  <section id="homeSection">
+    <h2>Bem-vindo à Padoka da Sorte 77!</h2>
+    <p>Faça suas apostas e boa sorte! Use o menu para navegar entre os jogos, depósitos e saques.</p>
+  </section>
 
-	if r.Method == http.MethodPost {
-		credStr := r.FormValue("credits")
-		if c, err := strconv.Atoi(credStr); err == nil {
-			credits = c
-		}
+  <section id="gamesSection" class="hidden">
+    <h2>Jogos Disponíveis</h2>
 
-		betStr := r.FormValue("bet")
-		if b, err := strconv.Atoi(betStr); err == nil {
-			betValue = b
-		}
+    <div class="game" id="game1">
+      <h3>Futebol: Time A vs Time B</h3>
+      <p>Escolha seu time vencedor e aposte um valor.</p>
+      <label>
+        Time vencedor: 
+        <select id="apostaTime1">
+          <option value="A">Time A</option>
+          <option value="B">Time B</option>
+          <option value="empate">Empate</option>
+        </select>
+      </label>
+      <label>
+        Valor: R$
+        <input type="number" id="valorAposta1" min="1" step="1" />
+      </label>
+      <button onclick="apostar(1)">Apostar</button>
+      <div class="resultado" id="resultado1"></div>
+    </div>
 
-		if betValue < 100 {
-			betValue = 100
-		}
-		if betValue > credits {
-			betValue = credits
-		}
+    <div class="game" id="game2">
+      <h3>Corrida de Cavalos: Cavalo X vs Cavalo Y</h3>
+      <p>Escolha o cavalo vencedor e aposte um valor.</p>
+      <label>
+        Cavalo vencedor: 
+        <select id="apostaCavalo2">
+          <option value="X">Cavalo X</option>
+          <option value="Y">Cavalo Y</option>
+          <option value="empate">Empate</option>
+        </select>
+      </label>
+      <label>
+        Valor: R$
+        <input type="number" id="valorAposta2" min="1" step="1" />
+      </label>
+      <button onclick="apostar(2)">Apostar</button>
+      <div class="resultado" id="resultado2"></div>
+    </div>
 
-		if credits < betValue {
-			data := SlotResult{
-				Reel1:    "❓",
-				Reel2:    "❓",
-				Reel3:    "❓",
-				Message:  "😞 Créditos insuficientes para essa aposta.",
-				Credits:  credits,
-				BetValue: betValue,
-			}
-			tpl.Execute(w, data)
-			return
-		}
+  </section>
 
-		credits -= betValue
+  <section id="depositSection" class="hidden">
+    <h2>Depósito</h2>
+    <p>Adicione dinheiro ao seu saldo.</p>
+    <label>
+      Valor para depositar: R$
+      <input type="number" id="valorDeposito" min="1" step="1" />
+    </label>
+    <button onclick="depositar()">Depositar</button>
+    <div class="resultado" id="resultadoDeposito"></div>
+  </section>
 
-		r1, r2, r3 := spin()
-		message := ""
+  <section id="withdrawSection" class="hidden">
+    <h2>Saque</h2>
+    <p>Retire dinheiro do seu saldo.</p>
+    <label>
+      Valor para sacar: R$
+      <input type="number" id="valorSaque" min="1" step="1" />
+    </label>
+    <button onclick="sacar()">Sacar</button>
+    <div class="resultado" id="resultadoSaque"></div>
+  </section>
+</main>
 
-		if checkWin(r1, r2, r3) {
-			winAmount := betValue * 4
-			credits += winAmount
-			message = fmt.Sprintf("🎉 Parabéns! Você ganhou %d créditos na Padoka da Sorte! 🎉", winAmount)
-		} else {
-			message = "Tente de novo! 🍞🥖🍰🧁🥐"
-		}
+<footer>
+  &copy; 2025 Padoka da Sorte 77 - Todos os direitos reservados
+</footer>
 
-		data := SlotResult{
-			Reel1:    r1,
-			Reel2:    r2,
-			Reel3:    r3,
-			Message:  message,
-			Credits:  credits,
-			BetValue: betValue,
-		}
+<script>
+  let saldo = 1000;
 
-		tpl.Execute(w, data)
-		return
-	}
+  function showSection(section) {
+    document.getElementById('homeSection').classList.add('hidden');
+    document.getElementById('gamesSection').classList.add('hidden');
+    document.getElementById('depositSection').classList.add('hidden');
+    document.getElementById('withdrawSection').classList.add('hidden');
 
-	data := SlotResult{
-		Reel1:    "❓",
-		Reel2:    "❓",
-		Reel3:    "❓",
-		Message:  "",
-		Credits:  credits,
-		BetValue: betValue,
-	}
-	tpl.Execute(w, data)
-}
+    if (section === 'home') document.getElementById('homeSection').classList.remove('hidden');
+    if (section === 'games') document.getElementById('gamesSection').classList.remove('hidden');
+    if (section === 'deposit') document.getElementById('depositSection').classList.remove('hidden');
+    if (section === 'withdraw') document.getElementById('withdrawSection').classList.remove('hidden');
+  }
 
-func main() {
-	http.HandleFunc("/", handler)
-	fmt.Println("Servidor rodando em http://localhost:8080")
-	err := http.ListenAndServe(":8080", nil)
-	if err != nil {
-		fmt.Println("Erro ao iniciar servidor:", err)
-	}
-}
+  function atualizarSaldo() {
+    document.getElementById('saldoValor').text
