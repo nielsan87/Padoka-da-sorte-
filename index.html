@@ -36,6 +36,7 @@
       font-weight: bold;
       font-size: 16px;
       transition: color 0.3s ease;
+      cursor: pointer;
     }
     nav a:hover {
       color: #ff5722;
@@ -64,34 +65,25 @@
       color: #ffcc00;
       text-shadow: 0 0 6px #ffcc00;
     }
-    .game {
-      margin-top: 15px;
-      background: #333;
-      padding: 15px;
-      border-radius: 6px;
-      box-shadow: 0 0 5px #fff200aa;
-    }
-    .game p {
-      margin: 8px 0;
-      font-weight: 600;
-    }
     label {
       font-weight: 600;
+      display: block;
+      margin-top: 10px;
     }
-    input[type=number] {
-      width: 100px;
+    select, input[type=number] {
+      width: 150px;
       padding: 6px;
-      margin-left: 10px;
       border-radius: 4px;
       border: none;
       font-size: 16px;
+      margin-top: 5px;
     }
     button {
       background: #ff5722;
       border: none;
       color: #fff;
       padding: 10px 18px;
-      margin-left: 10px;
+      margin-top: 15px;
       border-radius: 5px;
       font-weight: 700;
       cursor: pointer;
@@ -102,7 +94,7 @@
       background: #d84315;
     }
     .resultado {
-      margin-top: 10px;
+      margin-top: 15px;
       font-weight: 700;
       font-size: 18px;
       color: #fff200;
@@ -124,8 +116,8 @@
         margin-left: 10px;
         font-size: 14px;
       }
-      input[type=number] {
-        width: 80px;
+      select, input[type=number] {
+        width: 120px;
       }
       button {
         padding: 8px 12px;
@@ -139,15 +131,15 @@
 <header>
   <h1>Padoka da Sorte 77</h1>
   <nav>
-    <a href="#" onclick="showSection('home')">Início</a>
-    <a href="#" onclick="showSection('games')">Jogos</a>
-    <a href="#" onclick="showSection('deposit')">Depósito</a>
-    <a href="#" onclick="showSection('withdraw')">Saque</a>
+    <a onclick="showSection('home')">Início</a>
+    <a onclick="showSection('games')">Jogos</a>
+    <a onclick="showSection('deposit')">Depósito</a>
+    <a onclick="showSection('withdraw')">Saque</a>
   </nav>
 </header>
 
 <main>
-  <div class="saldo">Saldo: R$ <span id="saldoValor">1000</span></div>
+  <div class="saldo">Saldo: R$ <span id="saldoValor">1000.00</span></div>
 
   <section id="homeSection">
     <h2>Bem-vindo à Padoka da Sorte 77!</h2>
@@ -155,46 +147,22 @@
   </section>
 
   <section id="gamesSection" class="hidden">
-    <h2>Jogos Disponíveis</h2>
+    <h2>Jogo: Time A vs Time B</h2>
+    <p>Escolha o time vencedor e aposte um valor.</p>
 
-    <div class="game" id="game1">
-      <h3>Futebol: Time A vs Time B</h3>
-      <p>Escolha seu time vencedor e aposte um valor.</p>
-      <label>
-        Time vencedor: 
-        <select id="apostaTime1">
-          <option value="A">Time A</option>
-          <option value="B">Time B</option>
-          <option value="empate">Empate</option>
-        </select>
-      </label>
-      <label>
-        Valor: R$
-        <input type="number" id="valorAposta1" min="1" step="1" />
-      </label>
-      <button onclick="apostar(1)">Apostar</button>
-      <div class="resultado" id="resultado1"></div>
-    </div>
+    <label for="timeEscolhido">Time vencedor:</label>
+    <select id="timeEscolhido">
+      <option value="A">Time A</option>
+      <option value="B">Time B</option>
+      <option value="empate">Empate</option>
+    </select>
 
-    <div class="game" id="game2">
-      <h3>Corrida de Cavalos: Cavalo X vs Cavalo Y</h3>
-      <p>Escolha o cavalo vencedor e aposte um valor.</p>
-      <label>
-        Cavalo vencedor: 
-        <select id="apostaCavalo2">
-          <option value="X">Cavalo X</option>
-          <option value="Y">Cavalo Y</option>
-          <option value="empate">Empate</option>
-        </select>
-      </label>
-      <label>
-        Valor: R$
-        <input type="number" id="valorAposta2" min="1" step="1" />
-      </label>
-      <button onclick="apostar(2)">Apostar</button>
-      <div class="resultado" id="resultado2"></div>
-    </div>
+    <label for="valorAposta">Valor da aposta (R$):</label>
+    <input type="number" id="valorAposta" min="1" step="1" />
 
+    <button onclick="apostar()">Apostar</button>
+
+    <div class="resultado" id="resultado"></div>
   </section>
 
   <section id="depositSection" class="hidden">
@@ -240,4 +208,76 @@
   }
 
   function atualizarSaldo() {
-    document.getElementById('saldoValor').text
+    document.getElementById('saldoValor').textContent = saldo.toFixed(2);
+  }
+
+  function apostar() {
+    const valorInput = document.getElementById('valorAposta');
+    const timeEscolhido = document.getElementById('timeEscolhido').value;
+    const resultadoDiv = document.getElementById('resultado');
+
+    let valor = Number(valorInput.value);
+    if (isNaN(valor) || valor <= 0) {
+      alert('Por favor, insira um valor válido para apostar.');
+      return;
+    }
+    if (valor > saldo) {
+      alert('Saldo insuficiente para essa aposta.');
+      return;
+    }
+
+    saldo -= valor;
+    atualizarSaldo();
+
+    // Resultado aleatório
+    const opcoes = ['A', 'B', 'empate'];
+    const resultadoReal = opcoes[Math.floor(Math.random() * opcoes.length)];
+
+    if (resultadoReal === timeEscolhido) {
+      let premio = valor * 2; // paga 2x o valor da aposta
+      saldo += premio;
+      resultadoDiv.textContent = `Parabéns! O resultado foi "${resultadoReal}". Você ganhou R$ ${premio.toFixed(2)}!`;
+    } else {
+      resultadoDiv.textContent = `O resultado foi "${resultadoReal}". Você perdeu R$ ${valor.toFixed(2)}. Tente novamente!`;
+    }
+
+    atualizarSaldo();
+    valorInput.value = '';
+  }
+
+  function depositar() {
+    const valorDeposito = Number(document.getElementById('valorDeposito').value);
+    const resultadoDeposito = document.getElementById('resultadoDeposito');
+    if (isNaN(valorDeposito) || valorDeposito <= 0) {
+      alert('Insira um valor válido para depósito.');
+      return;
+    }
+    saldo += valorDeposito;
+    atualizarSaldo();
+    resultadoDeposito.textContent = `Depósito de R$ ${valorDeposito.toFixed(2)} realizado com sucesso!`;
+    document.getElementById('valorDeposito').value = '';
+  }
+
+  function sacar() {
+    const valorSaque = Number(document.getElementById('valorSaque').value);
+    const resultadoSaque = document.getElementById('resultadoSaque');
+    if (isNaN(valorSaque) || valorSaque <= 0) {
+      alert('Insira um valor válido para saque.');
+      return;
+    }
+    if (valorSaque > saldo) {
+      alert('Saldo insuficiente para saque.');
+      return;
+    }
+    saldo -= valorSaque;
+    atualizarSaldo();
+    resultadoSaque.textContent = `Saque de R$ ${valorSaque.toFixed(2)} realizado com sucesso!`;
+    document.getElementById('valorSaque').value = '';
+  }
+
+  atualizarSaldo();
+  showSection('home');
+</script>
+
+</body>
+</html>
