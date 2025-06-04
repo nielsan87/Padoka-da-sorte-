@@ -1,283 +1,230 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-br">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Padoka da Sorte 77</title>
+  <title>Inteligência Artificial Niel Lima - Palpites Completos</title>
   <style>
     body {
-      margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: #1a1a1a;
-      color: #fff;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #000022, #220000);
+      color: #eee;
+      margin: 0; padding: 0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
     }
     header {
-      background: #d32f2f;
-      padding: 15px 20px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      position: fixed;
+      background: #0a0a1a;
       width: 100%;
-      top: 0;
-      z-index: 1000;
-      box-shadow: 0 3px 8px rgba(0,0,0,0.7);
-    }
-    header h1 {
-      margin: 0;
-      font-size: 24px;
-      color: #fff200;
-      font-weight: 900;
-      letter-spacing: 2px;
-    }
-    nav a {
-      color: #fff200;
-      text-decoration: none;
-      margin-left: 20px;
+      padding: 20px 0;
+      text-align: center;
+      border-bottom: 3px solid #e30b17;
       font-weight: bold;
-      font-size: 16px;
-      transition: color 0.3s ease;
-      cursor: pointer;
+      font-size: 2rem;
+      color: #e30b17;
+      text-shadow: 0 0 8px #e30b17;
+      user-select: none;
     }
-    nav a:hover {
-      color: #ff5722;
-    }
-    main {
-      padding: 100px 20px 40px;
-      max-width: 900px;
-      margin: 0 auto;
-    }
-    .saldo {
-      font-size: 18px;
-      margin-bottom: 20px;
-      color: #fff200;
-      font-weight: 700;
-      text-align: right;
-    }
-    section {
-      margin-bottom: 40px;
-      background: #222;
-      padding: 20px;
-      border-radius: 8px;
-      box-shadow: 0 0 10px #ff5722aa;
-    }
-    section h2 {
-      margin-top: 0;
-      color: #ffcc00;
-      text-shadow: 0 0 6px #ffcc00;
-    }
-    label {
-      font-weight: 600;
-      display: block;
-      margin-top: 10px;
-    }
-    select, input[type=number] {
-      width: 150px;
-      padding: 6px;
-      border-radius: 4px;
-      border: none;
-      font-size: 16px;
-      margin-top: 5px;
-    }
-    button {
-      background: #ff5722;
-      border: none;
-      color: #fff;
+    button.results {
+      background: transparent;
+      border: 2px solid #e30b17;
+      color: #e30b17;
       padding: 10px 18px;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 1rem;
+      cursor: pointer;
+      margin-top: 10px;
+      transition: all 0.3s ease;
+      user-select: none;
+    }
+    button.results:hover {
+      background: #e30b17;
+      color: black;
+      box-shadow: 0 0 12px #e30b17;
+    }
+    nav {
+      width: 100%;
+      max-width: 900px;
+      display: flex;
+      justify-content: center;
+      background: #110011;
       margin-top: 15px;
-      border-radius: 5px;
-      font-weight: 700;
+      border-radius: 8px;
+      overflow: hidden;
+      user-select: none;
+    }
+    nav button {
+      background: #220022;
+      border: none;
+      padding: 14px 22px;
+      flex-grow: 1;
+      color: #e30b17;
+      font-weight: 600;
+      font-size: 1.1rem;
       cursor: pointer;
       transition: background 0.3s ease;
-      font-size: 16px;
     }
-    button:hover {
-      background: #d84315;
+    nav button:hover,
+    nav button.active {
+      background: #e30b17;
+      color: black;
+      text-shadow: 0 0 8px black;
     }
-    .resultado {
-      margin-top: 15px;
-      font-weight: 700;
-      font-size: 18px;
-      color: #fff200;
-      text-shadow: 0 0 6px #fff200;
+    main {
+      width: 100%;
+      max-width: 900px;
+      padding: 25px 20px;
+      box-sizing: border-box;
+      margin-bottom: 50px;
     }
-    .hidden {
+    section {
       display: none;
+      animation: fadeIn 0.4s ease forwards;
     }
-    footer {
+    section.active {
+      display: block;
+    }
+    @keyframes fadeIn {
+      from {opacity: 0;}
+      to {opacity: 1;}
+    }
+    h2 {
+      color: #e30b17;
+      text-shadow: 0 0 6px #e30b17;
+      margin-bottom: 20px;
+      user-select: none;
+    }
+    .match {
+      background: #220011;
+      padding: 15px 20px;
+      margin-bottom: 15px;
+      border-radius: 10px;
+      box-shadow: 0 0 8px #e30b17aa inset;
+      line-height: 1.4;
+      user-select: text;
+    }
+    .match strong {
+      font-size: 1.1rem;
+      color: #ff4545;
+      text-shadow: 0 0 5px #ff4545;
+    }
+    .footer-note {
+      color: #888;
       text-align: center;
-      padding: 15px;
-      color: #555;
-      background: #111;
-      font-size: 14px;
-      margin-top: 40px;
-    }
-    @media(max-width: 600px) {
-      nav a {
-        margin-left: 10px;
-        font-size: 14px;
-      }
-      select, input[type=number] {
-        width: 120px;
-      }
-      button {
-        padding: 8px 12px;
-        font-size: 14px;
-      }
+      font-size: 0.9rem;
+      margin-bottom: 20px;
+      user-select: none;
     }
   </style>
 </head>
 <body>
+  <header>
+    Inteligência Artificial Niel Lima
+    <br />
+    <button class="results" onclick="alert('Histórico em breve!')">▶️ Resultados anteriores</button>
+  </header>
 
-<header>
-  <h1>Padoka da Sorte 77</h1>
   <nav>
-    <a onclick="showSection('home')">Início</a>
-    <a onclick="showSection('games')">Jogos</a>
-    <a onclick="showSection('deposit')">Depósito</a>
-    <a onclick="showSection('withdraw')">Saque</a>
+    <button id="btn-futebol" class="active" onclick="showSection('futebol')">Futebol</button>
+    <button id="btn-gols" onclick="showSection('gols')">Gols e Cartões</button>
+    <button id="btn-basquete" onclick="showSection('basquete')">Basquete</button>
   </nav>
-</header>
 
-<main>
-  <div class="saldo">Saldo: R$ <span id="saldoValor">1000.00</span></div>
+  <main>
+    <section id="futebol" class="active">
+      <h2>Palpites de Futebol para Hoje</h2>
+      <div class="match">
+        <strong>Alemanha x Portugal</strong><br/>
+        Resultado: Alemanha vence<br/>
+        Horário: 16h (Brasília) - UEFA Nations League – Semifinal
+      </div>
+      <div class="match">
+        <strong>Botafogo x Ceará</strong><br/>
+        Resultado: Botafogo vence<br/>
+        Horário: 19h (Brasília) - Campeonato Brasileiro Série A
+      </div>
+      <div class="match">
+        <strong>Confiança x Bahia</strong><br/>
+        Resultado: Bahia vence<br/>
+        Horário: 21h30 (Brasília) - Copa do Nordeste
+      </div>
+      <div class="match">
+        <strong>Deportes Tolima x Independiente Medellín</strong><br/>
+        Resultado: Empate<br/>
+        Horário: 22h (Brasília) - Campeonato Colombiano
+      </div>
+      <div class="match">
+        <strong>Sanfrecce Hiroshima x Avispa Fukuoka</strong><br/>
+        Resultado: Sanfrecce Hiroshima vence<br/>
+        Horário: 7h (Brasília) - J.League Cup – Play-off
+      </div>
+      <div class="match">
+        <strong>Cerezo Osaka x Yokohama FC</strong><br/>
+        Resultado: Cerezo Osaka vence<br/>
+        Horário: 7h (Brasília) - J.League Cup – Play-off
+      </div>
+      <div class="match">
+        <strong>Corinthians x Taubaté (Feminino)</strong><br/>
+        Resultado: Corinthians vence<br/>
+        Horário: 15h (Brasília) - Campeonato Paulista Feminino
+      </div>
+      <div class="match">
+        <strong>Palmeiras x São Paulo (Feminino)</strong><br/>
+        Resultado: Palmeiras vence<br/>
+        Horário: 17h (Brasília) - Campeonato Paulista Feminino
+      </div>
+    </section>
 
-  <section id="homeSection">
-    <h2>Bem-vindo à Padoka da Sorte 77!</h2>
-    <p>Faça suas apostas e boa sorte! Use o menu para navegar entre os jogos, depósitos e saques.</p>
-  </section>
+    <section id="gols">
+      <h2>Palpites de Gols e Cartões</h2>
+      <div class="match">Alemanha x Portugal - Mais de 2.5 gols, mais de 3.5 cartões</div>
+      <div class="match">Botafogo x Ceará - Mais de 1.5 gols, mais de 4.5 cartões</div>
+      <div class="match">Confiança x Bahia - Menos de 2.5 gols, mais de 3.5 cartões</div>
+      <div class="match">Tolima x Medellín - Menos de 2.5 gols, mais de 4.5 cartões</div>
+      <div class="match">Sanfrecce Hiroshima x Avispa Fukuoka - Mais de 2.5 gols, mais de 3.5 cartões</div>
+      <div class="match">Cerezo Osaka x Yokohama FC - Mais de 2.5 gols, mais de 3.5 cartões</div>
+      <div class="match">Corinthians x Taubaté - Mais de 3.5 gols, mais de 2.5 cartões</div>
+      <div class="match">Palmeiras x São Paulo - Mais de 2.5 gols, mais de 3.5 cartões</div>
+    </section>
 
-  <section id="gamesSection" class="hidden">
-    <h2>Jogo: Time A vs Time B</h2>
-    <p>Escolha o time vencedor e aposte um valor.</p>
+    <section id="basquete">
+      <h2>Palpites de Basquete</h2>
+      <div class="match">
+        <strong>Oklahoma City Thunder vs. Indiana Pacers</strong><br/>
+        Vitória do Thunder, Mais de 215,5 pontos, Shai Gilgeous-Alexander +28,5 pontos<br/>
+        Horário: 21h30 (Brasília) - NBA Finais 2025
+      </div>
+      <div class="match">
+        <strong>Real Madrid vs. FC Barcelona</strong><br/>
+        Vitória do Real Madrid, Menos de 160,5 pontos<br/>
+        Horário: 16h00 (Brasília) - Liga ACB (Espanha)
+      </div>
+      <div class="match">
+        <strong>Flamengo vs. Franca</strong><br/>
+        Vitória do Flamengo, Mais de 170,5 pontos<br/>
+        Horário: 19h00 (Brasília) - NBB (Brasil)
+      </div>
+    </section>
+  </main>
 
-    <label for="timeEscolhido">Time vencedor:</label>
-    <select id="timeEscolhido">
-      <option value="A">Time A</option>
-      <option value="B">Time B</option>
-      <option value="empate">Empate</option>
-    </select>
+  <script>
+    function showSection(id) {
+      document.querySelectorAll('section').forEach(section => {
+        section.classList.remove('active');
+      });
+      document.getElementById(id).classList.add('active');
 
-    <label for="valorAposta">Valor da aposta (R$):</label>
-    <input type="number" id="valorAposta" min="1" step="1" />
-
-    <button onclick="apostar()">Apostar</button>
-
-    <div class="resultado" id="resultado"></div>
-  </section>
-
-  <section id="depositSection" class="hidden">
-    <h2>Depósito</h2>
-    <p>Adicione dinheiro ao seu saldo.</p>
-    <label>
-      Valor para depositar: R$
-      <input type="number" id="valorDeposito" min="1" step="1" />
-    </label>
-    <button onclick="depositar()">Depositar</button>
-    <div class="resultado" id="resultadoDeposito"></div>
-  </section>
-
-  <section id="withdrawSection" class="hidden">
-    <h2>Saque</h2>
-    <p>Retire dinheiro do seu saldo.</p>
-    <label>
-      Valor para sacar: R$
-      <input type="number" id="valorSaque" min="1" step="1" />
-    </label>
-    <button onclick="sacar()">Sacar</button>
-    <div class="resultado" id="resultadoSaque"></div>
-  </section>
-</main>
-
-<footer>
-  &copy; 2025 Padoka da Sorte 77 - Todos os direitos reservados
-</footer>
-
-<script>
-  let saldo = 1000;
-
-  function showSection(section) {
-    document.getElementById('homeSection').classList.add('hidden');
-    document.getElementById('gamesSection').classList.add('hidden');
-    document.getElementById('depositSection').classList.add('hidden');
-    document.getElementById('withdrawSection').classList.add('hidden');
-
-    if (section === 'home') document.getElementById('homeSection').classList.remove('hidden');
-    if (section === 'games') document.getElementById('gamesSection').classList.remove('hidden');
-    if (section === 'deposit') document.getElementById('depositSection').classList.remove('hidden');
-    if (section === 'withdraw') document.getElementById('withdrawSection').classList.remove('hidden');
-  }
-
-  function atualizarSaldo() {
-    document.getElementById('saldoValor').textContent = saldo.toFixed(2);
-  }
-
-  function apostar() {
-    const valorInput = document.getElementById('valorAposta');
-    const timeEscolhido = document.getElementById('timeEscolhido').value;
-    const resultadoDiv = document.getElementById('resultado');
-
-    let valor = Number(valorInput.value);
-    if (isNaN(valor) || valor <= 0) {
-      alert('Por favor, insira um valor válido para apostar.');
-      return;
+      // Ajustar botões ativos
+      document.querySelectorAll('nav button').forEach(btn => {
+        btn.classList.remove('active');
+      });
+      if(id === 'futebol') document.getElementById('btn-futebol').classList.add('active');
+      else if(id === 'gols') document.getElementById('btn-gols').classList.add('active');
+      else if(id === 'basquete') document.getElementById('btn-basquete').classList.add('active');
     }
-    if (valor > saldo) {
-      alert('Saldo insuficiente para essa aposta.');
-      return;
-    }
-
-    saldo -= valor;
-    atualizarSaldo();
-
-    // Resultado aleatório
-    const opcoes = ['A', 'B', 'empate'];
-    const resultadoReal = opcoes[Math.floor(Math.random() * opcoes.length)];
-
-    if (resultadoReal === timeEscolhido) {
-      let premio = valor * 2; // paga 2x o valor da aposta
-      saldo += premio;
-      resultadoDiv.textContent = `Parabéns! O resultado foi "${resultadoReal}". Você ganhou R$ ${premio.toFixed(2)}!`;
-    } else {
-      resultadoDiv.textContent = `O resultado foi "${resultadoReal}". Você perdeu R$ ${valor.toFixed(2)}. Tente novamente!`;
-    }
-
-    atualizarSaldo();
-    valorInput.value = '';
-  }
-
-  function depositar() {
-    const valorDeposito = Number(document.getElementById('valorDeposito').value);
-    const resultadoDeposito = document.getElementById('resultadoDeposito');
-    if (isNaN(valorDeposito) || valorDeposito <= 0) {
-      alert('Insira um valor válido para depósito.');
-      return;
-    }
-    saldo += valorDeposito;
-    atualizarSaldo();
-    resultadoDeposito.textContent = `Depósito de R$ ${valorDeposito.toFixed(2)} realizado com sucesso!`;
-    document.getElementById('valorDeposito').value = '';
-  }
-
-  function sacar() {
-    const valorSaque = Number(document.getElementById('valorSaque').value);
-    const resultadoSaque = document.getElementById('resultadoSaque');
-    if (isNaN(valorSaque) || valorSaque <= 0) {
-      alert('Insira um valor válido para saque.');
-      return;
-    }
-    if (valorSaque > saldo) {
-      alert('Saldo insuficiente para saque.');
-      return;
-    }
-    saldo -= valorSaque;
-    atualizarSaldo();
-    resultadoSaque.textContent = `Saque de R$ ${valorSaque.toFixed(2)} realizado com sucesso!`;
-    document.getElementById('valorSaque').value = '';
-  }
-
-  atualizarSaldo();
-  showSection('home');
-</script>
-
+  </script>
 </body>
 </html>
